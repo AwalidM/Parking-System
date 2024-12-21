@@ -10,7 +10,7 @@ on:
 
 jobs:
   deployment-test:
-    runs-on: ubuntu-22.04 # Explicit version to avoid unexpected updates
+    runs-on: ubuntu-22.04 
 
     steps:
     - name: Checkout code
@@ -19,7 +19,10 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.9"
+        python-version: "3.9" 
+
+    - name: Install dependencies
+      run: pip install requests
 
     - name: Run deployment test
       run: python Run.py
