@@ -1,0 +1,58 @@
+name: CI/CD for Smart Parking System
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
+
+    - name: Install dependencies
+      run: |
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Run tests
+      run: |
+        python -m unittest discover
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'
+
+    - name: Install frontend dependencies
+      run: |
+        cd frontend
+        if [ -f package.json ]; then npm install; fi
+
+    - name: Build frontend
+      run: |
+        if [ -d frontend ]; then npm run build; fi
+
+    - name: Start web server
+      run: |
+        nohup python -m http.server 8000 &
+        sleep 5
+
+    - name: Run user verification
+      run: |
+        curl -f http://localhost:8000 || exit 1
+
+    - name: Cleanup
+      if: always()
+      run: |
+        pkill -f "python -m http.server" || true
