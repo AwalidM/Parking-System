@@ -23,8 +23,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Run tests
       run: |
@@ -38,22 +37,22 @@ jobs:
     - name: Install frontend dependencies
       run: |
         cd frontend
-        npm install
+        if [ -f package.json ]; then npm install; fi
 
     - name: Build frontend
       run: |
-        npm run build
+        if [ -d frontend ]; then npm run build; fi
 
     - name: Start web server
       run: |
         nohup python -m http.server 8000 &
-        echo "Server running at http://localhost:8000"
+        sleep 5
 
     - name: Run user verification
       run: |
         curl -f http://localhost:8000 || exit 1
 
     - name: Cleanup
-      if: success() || failure()
+      if: always()
       run: |
-        pkill -f "python -m http.server"
+        pkill -f "python -m http.server" || true
