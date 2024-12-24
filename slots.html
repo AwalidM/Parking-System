@@ -15,7 +15,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Parking Slots</a></li>
+                <li class="nav-item"><a class="nav-link active" href="#">Parking Slots</a></li>
             </ul>
         </div>
     </div>
@@ -24,11 +24,85 @@
 <div class="container mt-5 pt-5">
     <h2 class="text-center">Select Parking Slot</h2>
     <div class="row" id="slotsContainer">
-        <!-- Parking slot cards will be added dynamically here -->
+        <p class="text-center">Loading parking slots...</p>
     </div>
 </div>
 
 <script src="js/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const userId = localStorage.getItem('user_id');
+        if (!userId) {
+            alert('Please log in first');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        fetch('http://127.0.0.1:5000/api/parking-slots/') // Ensure backend route exists
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch parking slots');
+                }
+                return response.json();
+            })
+            .then(slots => {
+                const container = document.getElementById('slotsContainer');
+                container.innerHTML = ''; // Clear loading message
+
+                if (slots.length === 0) {
+                    container.innerHTML = '<p class="text-center">No parking slots available.</p>';
+                    return;
+                }
+
+                slots.forEach(slot => {
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = 'col-md-4';
+                    slotDiv.innerHTML = `
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">${slot.name}</h5>
+                                <p class="card-text">Status: ${slot.is_available ? 'Available' : 'Occupied'}</p>
+                                <button class="btn btn-primary" ${slot.is_available ? '' : 'disabled'}
+                                    onclick="bookSlot(${slot.id})">Book Now</button>
+                            </div>
+                        </div>`;
+                    container.appendChild(slotDiv);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching parking slots:', error);
+                alert('An error occurred while loading parking slots. Please try again.');
+            });
+    });
+
+    function bookSlot(slotId) {
+        const userId = localStorage.getItem('user_id');
+        fetch('http://127.0.0.1:5000/api/book-slot/', { // Ensure backend route exists
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                user: userId,
+                parking_slot: slotId,
+                start_time: new Date().toISOString(),
+                end_time: new Date(Date.now() + 3600000).toISOString() // 1 hour later
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Failed to book slot');
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert(data.message || 'Booking successful');
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error booking slot:', error);
+            alert('An error occurred while booking the slot. Please try again.');
+        });
+    }
+</script>
 </body>
 </html>

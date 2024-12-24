@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Parking - Sign Up</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="E:\Project_Software\CSS\style.css">
 </head>
 <body>
 
@@ -42,6 +41,33 @@
     </form>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('signupForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const username = document.getElementById('fullname').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+
+        fetch('http://127.0.0.1:5000/api/users/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: username, email: email, password: password })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message === 'User registered successfully') {
+                alert('Sign Up Successful');
+                window.location.href = 'index.html';
+            } else {
+                alert('Sign Up Failed: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Sign Up Failed: Unable to connect to the server.');
+        });
+    });
+</script>
+
 </body>
 </html>

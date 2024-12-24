@@ -1,0 +1,4 @@
+CREATE DATABASE e_parking;
+CREATE USER 'Amr2221'@'localhost' IDENTIFIED BY '0000';
+GRANT ALL PRIVILEGES ON e_parking.* TO 'Amr2221'@'localhost';
+FLUSH PRIVILEGES;
